@@ -228,28 +228,32 @@ class BreakoutGraphics:
         maybe_obj3 = self.window.get_object_at(point3_x, point3_y + 0.1)
         maybe_obj4 = self.window.get_object_at(point4_x + 0.1, point4_y)
 
-        if maybe_obj1 is not None and maybe_obj1 is not self.paddle and maybe_obj1 is not self.point:
+        if (maybe_obj1 is not None and maybe_obj1 is not self.paddle 
+            and maybe_obj1 is not self.point and maybe_obj1 is not self.life):
             self.window.remove(maybe_obj1)
             self.__dy = -self.__dy
             point += 1
             self.window.remove(self.point)
             self.point.text = "Point: " + str(point)
             self.window.add(self.point)
-        elif maybe_obj2 is not None and maybe_obj2 is not self.paddle and maybe_obj2 is not self.point:
+        elif (maybe_obj2 is not None and maybe_obj2 is not self.paddle 
+            and maybe_obj2 is not self.point and maybe_obj2 is not self.life):
             self.window.remove(maybe_obj2)
             self.__dx = -self.__dx
             point += 1
             self.window.remove(self.point)
             self.point.text = "Point: " + str(point)
             self.window.add(self.point)
-        elif maybe_obj3 is not None and maybe_obj3 is not self.paddle and maybe_obj3 is not self.point:
+        elif (maybe_obj3 is not None and maybe_obj3 is not self.paddle 
+            and maybe_obj3 is not self.point and maybe_obj3 is not self.life):
             self.window.remove(maybe_obj3)
             self.__dy = -self.__dy
             point += 1
             self.window.remove(self.point)
             self.point.text = "Point: " + str(point)
             self.window.add(self.point)
-        elif maybe_obj4 is not None and maybe_obj4 is not self.paddle and maybe_obj4 is not self.point:
+        elif (maybe_obj4 is not None and maybe_obj4 is not self.paddle 
+            and maybe_obj4 is not self.point and maybe_obj4 is not self.life):
             self.window.remove(maybe_obj4)
             self.__dx = -self.__dx
             point += 1
