@@ -1,7 +1,7 @@
 from campy.gui.events.timer import pause
-from b2 import BreakoutGraphics
+from breakoutgraphics2 import BreakoutGraphics
 
-FRAME_RATE = 1000 / 100   # 120 frames per second.
+FRAME_RATE = 1000 / 120   # 120 frames per second.
 NUM_LIVES = 10
 
 
@@ -13,17 +13,12 @@ def main():
             break
         else:
             pause(FRAME_RATE)
-            graphics.move()
             graphics.reflect()
-            graphics.remove_and_point()
-            graphics.window.remove(graphics.life)
-            graphics.life.text = "Lives: " + str(lives)
-            graphics.window.add(graphics.life)
+            graphics.move()
+            graphics.remove_and_score()
+            graphics.countlives()
             if graphics.ball.y >= graphics.window.height:
                 lives -= 1
-                graphics.window.remove(graphics.life)
-                graphics.life.text = "Lives: " + str(lives)
-                graphics.window.add(graphics.life)
                 graphics.reset_ball()
                 graphics.switch_off()
 
