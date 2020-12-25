@@ -1,23 +1,24 @@
 from campy.graphics.gwindow import GWindow
-from campy.graphics.gobjects import GOval, GRect, GLabel
+from campy.graphics.gobjects import GOval, GRect, GLabel, GLine
 from campy.gui.events.mouse import onmouseclicked, onmousemoved
 import random
 
 BRICK_SPACING = 3  # Space between bricks (in pixels). This space is used for horizontal and vertical spacing.
-BRICK_WIDTH = 50  # Height of a brick (in pixels).
-BRICK_HEIGHT = 20  # Height of a brick (in pixels).
-BRICK_ROWS = 8  # Number of rows of bricks.
+BRICK_WIDTH = 45  # Height of a brick (in pixels).
+BRICK_HEIGHT = 16  # Height of a brick (in pixels).
+BRICK_ROWS = 10  # Number of rows of bricks.
 BRICK_COLS = 10  # Number of columns of bricks.
-BRICK_OFFSET = 30  # Vertical offset of the topmost brick from the window top (in pixels).
+BRICK_OFFSET = 120  # Vertical offset of the topmost brick from the window top (in pixels).
 BALL_RADIUS = 5  # Radius of the ball (in pixels).
 PADDLE_WIDTH = 75  # Width of the paddle (in pixels).
-PADDLE_HEIGHT = 15  # Height of the paddle (in pixels).
+PADDLE_HEIGHT = 3  # Height of the paddle (in pixels).
 PADDLE_OFFSET = 100  # Vertical offset of the paddle from the window bottom (in pixels).
 
-INITIAL_Y_SPEED = 7.0  # Initial vertical speed for the ball.
-INITIAL_X_SPEED = 7.0  # Maximum initial horizontal speed for the ball.
+INITIAL_Y_SPEED = 5.0  # Initial vertical speed for the ball.
+MAX_X_SPEED = 7.0  # Maximum initial horizontal speed for the ball.
 
-point = 0   # Create a space to store the point.
+LIVES = 10
+score = 0   # Create a space to store the point.
 win = False   # When all bricks are disappeared, the player win the the game. "win" will be changed into True.
 reflecting_up = True
 reflecting_left = True
@@ -29,32 +30,70 @@ class BreakoutGraphics:
                  brick_rows=BRICK_ROWS, brick_cols=BRICK_COLS,
                  brick_width=BRICK_WIDTH, brick_height=BRICK_HEIGHT,
                  brick_offset=BRICK_OFFSET, brick_spacing=BRICK_SPACING,
-                 title='Breakout'):
+                 lives=LIVES, title='Breakout'):
 
         # Create a graphical window, with some extra space.
         window_width = brick_cols * (brick_width + brick_spacing) - brick_spacing
-        window_height = brick_offset + 3 * (brick_rows * (brick_height + brick_spacing) - brick_spacing)
+        window_height = 650
+        #brick_offset + 2.5 * (brick_rows * (brick_height + brick_spacing) - brick_spacing)
         self.window = GWindow(width=window_width, height=window_height, title=title)
-
-        # Create a black paddle.
+        # Create a black background
+        self.black = GRect(width=window_width, height=window_height, x=0, y=0)
+        self.black.filled = True
+        self.window.add(self.black) 
+        # Create a white paddle.
         self.paddle = GRect(width=paddle_width, height=paddle_height, x=(window_width - paddle_width) / 2,
                             y=window_height - paddle_offset)
         self.paddle.filled = True
-        self.paddle.color = "black"
-        self.paddle.fill_color = "black"
+        self.paddle.color = "white"
+        self.paddle.fill_color = "white"
         self.window.add(self.paddle)
 
-        # Create a point label.
-        self.point = GLabel("Point: " + str(point), x=self.window.width - 100, y=self.window.height)
-        self.window.add(self.point)
+        # Create a score label.
+        self.score = GLabel("SCORE: " + str("{:0>5d}".format(score)), x=self.window.width - 200, y=82)
+        self.score.font = "Phosphate-22"
+        self.score.color = "Magenta"
+        self.window.add(self.score)
         # Create a life label
-        self.life = GLabel("", x=self.window.width - 300, y=self.window.height)
-        self.window.add(self.point)
+        self.lives = lives
+        self.life = GLabel("Lives: " + str(lives), x=self.window.width - 200, y=58)
+        self.life.font = "Phosphate-22"
+        self.life.color = "Magenta"
+        self.window.add(self.life)
+        # create the topic label
+        self.topic1 = GLabel("BR", x=32, y=60)
+        self.topic1.font = "Phosphate-35"
+        self.topic1.color = "Aqua"
+        self.topic2 = GLabel("ICKS", x=72, y=60)
+        self.topic2.font = "Phosphate-35"
+        self.topic2.color = "Magenta"
+        self.topic3 = GLabel("BR", x=32, y=90)
+        self.topic3.font = "Phosphate-35"
+        self.topic3.color = "Aqua"
+        self.topic4 = GLabel("EAKOUT", x=72, y=90)
+        self.topic4.font = "Phosphate-35"
+        self.topic4.color = "Magenta"
+        self.window.add(self.topic1)
+        self.window.add(self.topic2)
+        self.window.add(self.topic3)
+        self.window.add(self.topic4)
+        # Create a line over the bricks
+        self.line1 = GRect(width=40, height=2, x=32, y=84)
+        self.line1.filled = True
+        self.line1.color = "Aqua"
+        self.line1.fill_color = "Aqua"
+        self.line2 = GRect(width=340, height=2, x=72, y=84)
+        self.line2.filled = True
+        self.line2.color = "Magenta"
+        self.line2.fill_color = "Magenta"
+        self.window.add(self.line1)
+        self.window.add(self.line2)
         # Center a ball in the graphical window.
         self.ball = GOval(ball_radius * 2, ball_radius * 2, x=(window_width - ball_radius) / 2,
                           y=(window_height - ball_radius) / 2)
+        self.ball.color = "white"
         self.ball.filled = True
-        self.ball.fill_color = "black"
+        self.ball.fill_color = "white"
         self.window.add(self.ball)
         self.start = False
         self.__dy = 0
@@ -109,7 +148,7 @@ class BreakoutGraphics:
 
     # Default initial velocity for the ball.
     def set_ball_velocity(self):
-        self.__dx = INITIAL_X_SPEED
+        self.__dx = random.randint(3, MAX_X_SPEED)
         self.__dy = INITIAL_Y_SPEED
         if random.random() > 0.5:
             self.__dx = -self.__dx
@@ -126,7 +165,7 @@ class BreakoutGraphics:
         # Condition: reflects when ball touches border.
         if self.window.width - self.ball.width <= self.ball.x or self.ball.x <= 0:
             self.__dx = -self.__dx
-        if self.ball.y <= 0:
+        if self.ball.y <= 86:
             self.__dy = -self.__dy
 
     # Function to reflect the ball when it touches border.
@@ -203,12 +242,13 @@ class BreakoutGraphics:
         self.ball.x = (self.window.width - BALL_RADIUS) / 2
         self.ball.y = (self.window.height - BALL_RADIUS * 2) / 2
 
-    # Function to remove bricks when four middle points touch any brick
+    # Function to remove bricks and reflect the ball 
+    # when four middle points touch any brick
     # and to count the points.
-    def remove_and_point(self):
+    def remove_and_score(self):
 
-        # Count the point of the game.
-        global point
+        # Count the score of the game.
+        global score
 
         # top middle point of the ball.
         point1_x = self.ball.x + BALL_RADIUS
@@ -229,41 +269,60 @@ class BreakoutGraphics:
         maybe_obj4 = self.window.get_object_at(point4_x + 0.1, point4_y)
 
         if (maybe_obj1 is not None and maybe_obj1 is not self.paddle 
-            and maybe_obj1 is not self.point and maybe_obj1 is not self.life):
+            and maybe_obj1 is not self.score and maybe_obj1 is not self.life
+            and maybe_obj1 is not self.black and maybe_obj1 is not self.line1
+            and maybe_obj1 is not self.line2 and maybe_obj1 is not self.topic3
+            and maybe_obj1 is not self.topic4):
             self.window.remove(maybe_obj1)
             self.__dy = -self.__dy
-            point += 1
-            self.window.remove(self.point)
-            self.point.text = "Point: " + str(point)
-            self.window.add(self.point)
+            score += 10
+            self.score.text = "SCORE: " + str("{:0>5d}".format(score))
+            self.window.add(self.score)
         elif (maybe_obj2 is not None and maybe_obj2 is not self.paddle 
-            and maybe_obj2 is not self.point and maybe_obj2 is not self.life):
+            and maybe_obj2 is not self.score and maybe_obj2 is not self.life
+            and maybe_obj2 is not self.black and maybe_obj2 is not self.line1
+            and maybe_obj2 is not self.line2 and maybe_obj2 is not self.topic3
+            and maybe_obj2 is not self.topic4):
             self.window.remove(maybe_obj2)
             self.__dx = -self.__dx
-            point += 1
-            self.window.remove(self.point)
-            self.point.text = "Point: " + str(point)
-            self.window.add(self.point)
+            score += 10
+            self.window.remove(self.score)
+            self.score.text = "SCORE: " + str("{:0>5d}".format(score))
+            self.window.add(self.score)
         elif (maybe_obj3 is not None and maybe_obj3 is not self.paddle 
-            and maybe_obj3 is not self.point and maybe_obj3 is not self.life):
+            and maybe_obj3 is not self.score and maybe_obj3 is not self.life
+            and maybe_obj3 is not self.black and maybe_obj3 is not self.line1
+            and maybe_obj3 is not self.line2 and maybe_obj3 is not self.topic3
+            and maybe_obj3 is not self.topic4):
             self.window.remove(maybe_obj3)
             self.__dy = -self.__dy
-            point += 1
-            self.window.remove(self.point)
-            self.point.text = "Point: " + str(point)
-            self.window.add(self.point)
+            score += 10
+            self.window.remove(self.score)
+            self.score.text = "SCORE: " + str("{:0>5d}".format(score))
+            self.window.add(self.score)
         elif (maybe_obj4 is not None and maybe_obj4 is not self.paddle 
-            and maybe_obj4 is not self.point and maybe_obj4 is not self.life):
+            and maybe_obj4 is not self.score and maybe_obj4 is not self.life
+            and maybe_obj4 is not self.black and maybe_obj4 is not self.line2
+            and maybe_obj4 is not self.line2 and maybe_obj4 is not self.topic3
+            and maybe_obj4 is not self.topic4):
             self.window.remove(maybe_obj4)
             self.__dx = -self.__dx
-            point += 1
-            self.window.remove(self.point)
-            self.point.text = "Point: " + str(point)
-            self.window.add(self.point)
+            score += 10
+            self.window.remove(self.score)
+            self.score.text = "SCORE: " + str("{:0>5d}".format(score))
+            self.window.add(self.score)
+
+
+    def countlives(self):
+        if self.ball.y >= self.window.height:
+            self.lives -= 1
+            self.window.remove(self.life)
+            self.life.text = "Lives: " + str(self.lives)
+            self.window.add(self.life)
 
     # Situation when the player wins the game.
     def finished(self):
         global win
-        if point >= BRICK_ROWS * BRICK_COLS:
+        if score >= 1000:
             win = True
         return win
